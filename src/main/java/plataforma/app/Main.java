@@ -20,10 +20,9 @@ import plataforma.service.NotificacaoService;
 
 public class Main {
 
-    // ---- Entrada de dados ----
     private static final Scanner scanner = new Scanner(System.in);
 
-    // ---- "Base de dados" em memória ----
+    // Base de dados em memória usando ArrayList
     private static final List<Trabalhadora> trabalhadoras = new ArrayList<>();
     private static final List<Contratante> contratantes = new ArrayList<>();
     private static final List<Reuniao> reunioes = new ArrayList<>();
@@ -32,7 +31,7 @@ public class Main {
 
     private static Administrador admin;
 
-    // ---- Serviços ----
+    //Serviços
     private static NotificacaoService notificacaoService;
     private static ModeracaoService moderacaoService;
     private static AgendamentoService agendamentoService;
@@ -44,25 +43,20 @@ public class Main {
         System.out.println("Até à próxima!");
     }
 
-    // =====================================================================
-    //  INICIALIZAÇÃO
-    // =====================================================================
 
+    //  INICIALIZAÇÃO
     private static void iniciar() {
         notificacaoService = new NotificacaoService(notificacoes);
         moderacaoService = new ModeracaoService(trabalhadoras);
         agendamentoService = new AgendamentoService(reunioes, notificacaoService);
         contratacaoService = new ContratacaoService(contratos, notificacaoService);
 
-        // Único dado inicial: o administrador (não há criação de contas de admin).
-        // Contratantes e trabalhadoras são criados pelo menu.
+        // Não há criação de contas de admin
         admin = new Administrador(1, "Admin", "84 111 1111");
     }
 
-    // =====================================================================
-    //  MENU PRINCIPAL
-    // =====================================================================
 
+    //  MENU PRINCIPAL
     private static void menuPrincipal() {
         int opcao = -1;
         while (opcao != 0) {
@@ -82,13 +76,28 @@ public class Main {
                     menuAdministrador();
                     break;
                 case 2:
-                    Contratante c = escolherContratante();
+                    Contratante c = null;
+                    if (contratantes.isEmpty()) {
+                        // Ainda não há contas: propõe criar já, sem voltar a mostrar o menu grande.
+                        if (oferecerCriarConta("contratante")) {
+                            c = criarContratante();
+                        }
+                    } else {
+                        c = escolherContratante();
+                    }
                     if (c != null) {
                         menuContratante(c);
                     }
                     break;
                 case 3:
-                    Trabalhadora t = escolherTrabalhadora("Entrar como:", trabalhadoras);
+                    Trabalhadora t = null;
+                    if (trabalhadoras.isEmpty()) {
+                        if (oferecerCriarConta("trabalhadora")) {
+                            t = criarTrabalhadora();
+                        }
+                    } else {
+                        t = escolherTrabalhadora("Entrar como:", trabalhadoras);
+                    }
                     if (t != null) {
                         menuTrabalhadora(t);
                     }
@@ -107,9 +116,7 @@ public class Main {
         }
     }
 
-    // =====================================================================
     //  MENU DO ADMINISTRADOR  (P03 - moderação)
-    // =====================================================================
 
     private static void menuAdministrador() {
         int opcao = -1;
@@ -236,9 +243,7 @@ public class Main {
         }
     }
 
-    // =====================================================================
     //  MENU DO CONTRATANTE  (P01 agendamento, P02 contratação)
-    // =====================================================================
 
     private static void menuContratante(Contratante contratante) {
         int opcao = -1;
@@ -351,9 +356,8 @@ public class Main {
         System.out.println("Denúncia registada. O administrador irá rever.");
     }
 
-    // =====================================================================
+
     //  MENU DA TRABALHADORA  (P04 - respostas e notificações)
-    // =====================================================================
 
     private static void menuTrabalhadora(Trabalhadora trabalhadora) {
         int opcao = -1;
@@ -422,11 +426,9 @@ public class Main {
         }
     }
 
-    // =====================================================================
-    //  CRIAÇÃO DE CONTAS
-    // =====================================================================
 
-    private static void criarContratante() {
+    //  CRIAÇÃO DE CONTAS
+    private static Contratante criarContratante() {
         System.out.print("Nome: ");
         String nome = scanner.nextLine().trim();
         System.out.print("Contacto: ");
@@ -435,14 +437,15 @@ public class Main {
         String morada = scanner.nextLine().trim();
         if (nome.isEmpty()) {
             System.out.println("Conta não criada (nome vazio).");
-            return;
+            return null;
         }
         Contratante c = new Contratante(contratantes.size() + 1, nome, contacto, morada);
         contratantes.add(c);
         System.out.println("Conta criada: " + c);
+        return c;
     }
 
-    private static void criarTrabalhadora() {
+    private static Trabalhadora criarTrabalhadora() {
         System.out.print("Nome: ");
         String nome = scanner.nextLine().trim();
         System.out.print("Contacto: ");
@@ -453,18 +456,17 @@ public class Main {
         String competencias = scanner.nextLine().trim();
         if (nome.isEmpty()) {
             System.out.println("Conta não criada (nome vazio).");
-            return;
+            return null;
         }
         Trabalhadora t = new Trabalhadora(trabalhadoras.size() + 1, nome, contacto, provincia);
         t.setCompetencias(competencias);
         trabalhadoras.add(t);
         System.out.println("Conta criada: " + t);
         System.out.println("O perfil só aparece nas pesquisas depois de o administrador validar a documentação.");
+        return t;
     }
 
-    // =====================================================================
-    //  NOTIFICAÇÕES (comum a contratante e trabalhadora)
-    // =====================================================================
+    //  NOTIFICAÇÕES
 
     private static void verNotificacoes(plataforma.model.Utilizador utilizador) {
         List<Notificacao> lista = notificacaoService.listarDe(utilizador);
@@ -478,9 +480,14 @@ public class Main {
         }
     }
 
-    // =====================================================================
+
     //  FUNÇÕES DE APOIO
-    // =====================================================================
+    // Avisa que ainda não há contas e pergunta se quer criar uma agora.
+    // Devolve true se a pessoa quiser criar a conta.
+    private static boolean oferecerCriarConta(String tipo) {
+        System.out.println("\nAinda não existe nenhuma conta de " + tipo + ". É preciso criar uma primeiro.");
+        return lerInt("Criar conta agora? (1 - Sim | 0 - Voltar ao menu): ") == 1;
+    }
 
     private static String descrever(Trabalhadora t) {
         String competencias = t.getCompetencias().isEmpty() ? "sem competências indicadas" : t.getCompetencias();
@@ -505,7 +512,7 @@ public class Main {
 
     private static Trabalhadora escolherTrabalhadora(String titulo, List<Trabalhadora> lista) {
         if (lista.isEmpty()) {
-            System.out.println("Não há trabalhadoras. Crie uma conta primeiro.");
+            System.out.println("Não há trabalhadoras registadas.");
             return null;
         }
         System.out.println("\n" + titulo);

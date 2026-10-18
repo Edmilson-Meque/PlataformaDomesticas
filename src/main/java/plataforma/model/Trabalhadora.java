@@ -6,7 +6,7 @@ import java.util.List;
 public class Trabalhadora extends Utilizador {
 
     private String provincia;
-    private String competencias;                 // descrição livre das competências
+    private String competencias;
     private boolean documentacaoValidada;
     private EstadoTrabalhadora estado;
     private List<Denuncia> denuncias;
@@ -14,7 +14,7 @@ public class Trabalhadora extends Utilizador {
     public Trabalhadora(int id, String nome, String contacto, String provincia) {
         super(id, nome, contacto);
         this.provincia = provincia;
-        this.competencias = "";                  // a trabalhadora preenche depois
+        this.competencias = "";
         this.documentacaoValidada = false;       // só passa a true depois de validada
         this.estado = EstadoTrabalhadora.DISPONIVEL;
         this.denuncias = new ArrayList<>();

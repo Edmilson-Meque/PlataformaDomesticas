@@ -1,6 +1,6 @@
 package plataforma.model;
 
-// Classe-mãe: guarda o que Administrador, Contratante e Trabalhadora têm em comum.
+
 public abstract class Utilizador {
 
     private int id;
