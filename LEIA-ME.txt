@@ -1,0 +1,45 @@
+A IDEIA DESTE TRABALHO
+======================
+Mostrar só uma IMPLEMENTAÇÃO BÁSICA dos paradigmas, sem ir muito a fundo, para se ver
+cada paradigma a funcionar dentro da plataforma de contratação doméstica.
+
+
+1) CRIAR A BASE DE DADOS NO MySQL WORKBENCH (só uma vez)
+=======================================================
+   - Abrir o MySQL Workbench e entrar no servidor (ex.: "Local instance", utilizador root)
+   - File > Open SQL Script... > escolher o ficheiro  base_dados_mysql.sql  (está nesta pasta)
+   - Carregar no raio (Execute) para correr o script todo
+   - Abrir o ficheiro  bd.properties  e pôr o utilizador e a senha do vosso MySQL
+
+   Se o MySQL não estiver ligado, a aplicação avisa e usa uma base local (H2) para não parar.
+
+
+2) COMPILAR E CORRER NO CMD (dentro da pasta PlataformaDomesticas)
+=================================================================
+   javac -encoding UTF-8 -cp "lib\h2.jar;lib\mysql-connector-j.jar" -d out -sourcepath src\main\java src\main\java\plataforma\app\Main.java
+
+   chcp 65001
+   java -Dstdout.encoding=UTF-8 -cp "out;lib\h2.jar;lib\mysql-connector-j.jar" plataforma.app.Main
+
+   (chcp 65001 e -Dstdout.encoding=UTF-8 servem só para os acentos aparecerem bem)
+
+   No IntelliJ: apagar as pastas target e out, Maven > Reload, Build > Rebuild Project, correr o Main.
+
+Para apagar todos os dados e começar do zero: no Workbench, DROP DATABASE plataforma_domesticas;
+e voltar a correr o script.
+
+
+ONDE ESTÁ CADA PARADIGMA
+========================
+Eventos (POJO, EventListener, EventBus)   -> event/  e  event/consumidores/
+Registo de produtores e consumidores      -> app/Main.java, método main (passos 1 a 5)
+Broker: fila de pedidos de pagamento      -> broker/Broker.java, broker/ServicoPagamentos.java
+Base de dados MySQL (JDBC)                -> dados/BaseDados.java, base_dados_mysql.sql
+Lock + fila de espera (UNDER OFFER)       -> service/AgendamentoService.java
+Modelo de Actores                         -> concorrencia/ActorTrabalhadora.java
+synchronized + wait/notify                -> concorrencia/MonitorPagamento.java (Demonstração 6)
+Tasks agendadas (Scheduler+hora+query SQL)-> concorrencia/TarefaManutencao.java
+Paradigma Lógico (regras)                 -> logica/MotorRegras.java (Demonstração 10)
+Padrão State (Candidatura)                -> model/Candidatura.java  e  model/estado/
+Offline-First (telemóvel)                 -> offline/Telemovel.java
+Demonstrações (opção 6 do menu)           -> demo/DemoParadigmas.java
