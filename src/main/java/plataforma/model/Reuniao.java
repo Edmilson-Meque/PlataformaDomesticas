@@ -7,15 +7,23 @@ public class Reuniao {
     private int id;
     private Contratante contratante;
     private Trabalhadora trabalhadora;
+    private Candidatura candidatura; // a candidatura que deu origem à reunião (pode ser null)
     private LocalDateTime criadaEm;
-    private EstadoReuniao estado;
+    private volatile EstadoReuniao estado;
 
-    public Reuniao(int id, Contratante contratante, Trabalhadora trabalhadora) {
+    public Reuniao(int id, Contratante contratante, Trabalhadora trabalhadora, Candidatura candidatura) {
+        this(id, contratante, trabalhadora, candidatura, EstadoReuniao.PENDENTE, LocalDateTime.now());
+    }
+
+    // usado ao carregar da base de dados
+    public Reuniao(int id, Contratante contratante, Trabalhadora trabalhadora, Candidatura candidatura,
+                   EstadoReuniao estado, LocalDateTime criadaEm) {
         this.id = id;
         this.contratante = contratante;
         this.trabalhadora = trabalhadora;
-        this.criadaEm = LocalDateTime.now();
-        this.estado = EstadoReuniao.PENDENTE;
+        this.candidatura = candidatura;
+        this.estado = estado;
+        this.criadaEm = criadaEm;
     }
 
     public int getId() {
@@ -30,6 +38,10 @@ public class Reuniao {
         return trabalhadora;
     }
 
+    public Candidatura getCandidatura() {
+        return candidatura;
+    }
+
     public LocalDateTime getCriadaEm() {
         return criadaEm;
     }
@@ -42,9 +54,14 @@ public class Reuniao {
         this.estado = estado;
     }
 
+    public boolean isActiva() {
+        return estado == EstadoReuniao.PENDENTE || estado == EstadoReuniao.ACEITE;
+    }
+
     @Override
     public String toString() {
         return "Reunião " + id + ": " + contratante.getNome() + " com "
-                + trabalhadora.getNome() + " [" + estado + "]";
+                + trabalhadora.getNome() + " [" + estado + "]"
+                + (candidatura != null ? " (vaga '" + candidatura.getVaga().getTitulo() + "')" : "");
     }
 }

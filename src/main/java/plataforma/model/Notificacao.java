@@ -8,14 +8,19 @@ public class Notificacao {
     private Utilizador destinatario;
     private String mensagem;
     private LocalDateTime criadaEm;
-    private boolean lida;
+    private volatile boolean lida;
 
     public Notificacao(int id, Utilizador destinatario, String mensagem) {
+        this(id, destinatario, mensagem, LocalDateTime.now(), false);
+    }
+
+    // usado ao carregar da base de dados
+    public Notificacao(int id, Utilizador destinatario, String mensagem, LocalDateTime criadaEm, boolean lida) {
         this.id = id;
         this.destinatario = destinatario;
         this.mensagem = mensagem;
-        this.criadaEm = LocalDateTime.now();
-        this.lida = false;
+        this.criadaEm = criadaEm;
+        this.lida = lida;
     }
 
     public int getId() {

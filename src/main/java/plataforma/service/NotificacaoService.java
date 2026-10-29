@@ -1,36 +1,42 @@
 package plataforma.service;
 
-import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import plataforma.model.Notificacao;
 import plataforma.model.Utilizador;
+import plataforma.util.Util;
 
-// P04 - Gestão de notificações
+// P04 - Gestão de notificações (Programação Funcional)
+// As notificações NÃO são impressas no ecrã de quem fez a acção: ficam guardadas e só
+// aparecem na aba "Ver notificações" do destinatário.
 public class NotificacaoService {
 
-    private List<Notificacao> notificacoes;
-    private int proximoId = 1;
+    private final List<Notificacao> notificacoes;
 
     public NotificacaoService(List<Notificacao> notificacoes) {
         this.notificacoes = notificacoes;
     }
 
-    // Cria a notificação, guarda-a na lista e mostra-a na consola.
-    public void enviar(Utilizador destinatario, String mensagem) {
-        Notificacao n = new Notificacao(proximoId++, destinatario, mensagem);
-        notificacoes.add(n);
-        System.out.println("   [Notificação] " + n);
+    // synchronized: vários consumidores (threads) enviam notificações ao mesmo tempo
+    public synchronized void enviar(Utilizador destinatario, String mensagem) {
+        notificacoes.add(new Notificacao(Util.proximoId(notificacoes, Notificacao::getId), destinatario, mensagem));
     }
 
-    // Todas as notificações de um utilizador.
-    public List<Notificacao> listarDe(Utilizador utilizador) {
-        List<Notificacao> resultado = new ArrayList<>();
-        for (Notificacao n : notificacoes) {
-            if (n.getDestinatario() == utilizador) {
-                resultado.add(n);
-            }
-        }
-        return resultado;
+    // Funcional: filter + sorted (mais recentes primeiro)
+    public synchronized List<Notificacao> listarDe(Utilizador utilizador) {
+        return notificacoes.stream()
+                .filter(n -> n.getDestinatario() == utilizador)
+                .sorted(Comparator.comparing(Notificacao::getCriadaEm).thenComparing(Notificacao::getId).reversed())
+                .collect(Collectors.toList());
+    }
+
+    // Funcional: filter + count
+    public synchronized long contarNaoLidas(Utilizador utilizador) {
+        return notificacoes.stream()
+                .filter(n -> n.getDestinatario() == utilizador)
+                .filter(n -> !n.isLida())
+                .count();
     }
 }
